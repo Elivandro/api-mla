@@ -20,6 +20,7 @@ class ClientFactory extends Factory
         return [
             'user_id' => User::factory(),
             'name' => fake('pt_BR')->name,
+            'email' => fake('pt_BR')->unique()->safeEmail,
             'phone' => fake('pt_BR')->phoneNumber,
         ];
     }
