@@ -18,14 +18,19 @@ class ClientController extends Controller
      */
     public function index()
     {
-        return new ClientCollection(Client::with('user')->get());
+        // dd(auth()->user());
+        abort_if(!auth()->user()->tokenCan('client:index'), 403, 'You must be authorized');
+
+        return new ClientCollection(Client::with('user', 'signature')->get());
     }
 
     /**
      * Store a newly created resource in storage.
      */
     public function store(StoreClientRequest $request)
-    {
+    {        
+        abort_if(!auth()->user()->tokenCan('client:store'), 403, 'You must be authorized');
+
         DB::Transaction(function () use($request) {
             $user   = User::create([
                 'email' => $request->get('email'),
@@ -48,8 +53,7 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        // return $client->load('user', 'signature');
-
+        abort_if(!auth()->user()->tokenCan('client:show'), 403, 'You must be authorized');
         return new ClientResource($client->load('user', 'signature'));
     }
 
