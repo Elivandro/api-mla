@@ -19,7 +19,10 @@ use Illuminate\Http\Request;
 Route::post('login', [AuthController::class, 'login'])->name('login');
 
 
-Route::group(['middleware' => 'auth:sanctum'], function () {
+Route::group([
+        'middleware' => ['auth:sanctum', 'api_version'],
+        'prefix' => '{apiVersion}'
+    ], function () {
 
     Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 

@@ -4,8 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreClientRequest;
 use App\Http\Requests\UpdateClientRequest;
-use App\Http\Resources\ClientCollection;
-use App\Http\Resources\ClientResource;
 use App\Models\Client;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
@@ -18,10 +16,11 @@ class ClientController extends Controller
      */
     public function index()
     {
-        // dd(auth()->user());
+        $apiResource = request()->apiNamespace.'Resources\ClientCollection';
+
         abort_if(!auth()->user()->tokenCan('client:index'), 403, 'You must be authorized');
 
-        return new ClientCollection(Client::with('user', 'signature')->get());
+        return new $apiResource(Client::with('user', 'signature')->get());
     }
 
     /**
@@ -53,15 +52,20 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        abort_if(!auth()->user()->tokenCan('client:show'), 403, 'You must be authorized');
-        return new ClientResource($client->load('user', 'signature'));
-    }
+        $apiResource = request()->apiNamespace.'Resources\ClientResource';
 
+        abort_if(!auth()->user()->tokenCan('client:show'), 403, 'You must be authorized');
+        
+        return new $apiResource($client->load('user', 'signature'));
+    }
+    
     /**
      * Update the specified resource in storage.
      */
     public function update(UpdateClientRequest $request, Client $client)
     {
+        abort_if(!auth()->user()->tokenCan('client:update'), 403, 'You must be authorized');
+        
         DB::transaction(function() use ($request, $client) {
             $clientName     = $request->get('name', $client->name);
             $clientPhone     = $request->get('phone', $client->phone);
@@ -87,6 +91,8 @@ class ClientController extends Controller
      */
     public function destroy(Client $client)
     {
+        abort_if(!auth()->user()->tokenCan('client:delete'), 403, 'You must be authorized');
+
         $client->delete();
 
         return response()->json(JsonResponse::HTTP_NO_CONTENT);
